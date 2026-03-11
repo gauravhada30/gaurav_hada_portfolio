@@ -88,7 +88,7 @@ class PortfolioData {
     ),
     ExperienceModel(
       company: 'Eravan Agritech Services',
-      role: 'Co-Founder & Flutter Developer',
+      role: 'Co-Founder',
       duration: 'April 2024 – March 2025',
       location: 'India',
       logoEmoji: '🌱',
