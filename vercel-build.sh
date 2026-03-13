@@ -24,20 +24,25 @@ if [ ! -d "flutter" ]; then
     rm "${FLUTTER_ARCHIVE}"
 fi
 
-# 3. Add Flutter to PATH
+# 3. Fix git safe.directory for root user (Vercel runs as root)
+git config --global --add safe.directory "$(pwd)/flutter" 2>/dev/null || true
+git config --global --add safe.directory "*" 2>/dev/null || true
+
+# 4. Add Flutter to PATH
 export PATH="$PATH:$(pwd)/flutter/bin"
 
-# 4. Disable analytics / prompts
-flutter config --no-analytics
+# 5. Disable analytics / prompts and suppress root warning
+export PUB_ENVIRONMENT="bot.vercel"
+flutter config --no-analytics 2>/dev/null || true
 
-# 5. Enable web
+# 6. Enable web
 flutter config --enable-web
 
-# 6. Get dependencies
+# 7. Get dependencies
 echo "Getting Flutter dependencies..."
 flutter pub get
 
-# 7. Build Flutter Web (release)
+# 8. Build Flutter Web (release)
 echo "Building Flutter Web..."
 flutter build web --release --no-tree-shake-icons
 
