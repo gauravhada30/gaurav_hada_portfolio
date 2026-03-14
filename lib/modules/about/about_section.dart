@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/responsive.dart';
 import '../../data/portfolio_data.dart';
@@ -147,17 +148,32 @@ class AboutSection extends StatelessWidget {
 
         // Contact chips
         Wrap(
-          spacing: 10,
+          spacing: 12,
           runSpacing: 10,
           children: [
-            _ContactChip(Icons.email_outlined, PortfolioData.email,
-                const Color(0xFFD4AF37)),
-            _ContactChip(Icons.phone_outlined, PortfolioData.phone,
-                const Color(0xFF10B981)),
+            _ContactChip(
+              Icons.email_outlined,
+              PortfolioData.email,
+              const Color(0xFFD4AF37),
+              onTap: () => _launchUrl('mailto:${PortfolioData.email}'),
+            ),
+            _ContactChip(
+              Icons.phone_outlined,
+              PortfolioData.phone,
+              const Color(0xFF10B981),
+              onTap: () => _launchUrl('tel:${PortfolioData.phone.replaceAll('-', '')}'),
+            ),
           ],
         ),
       ],
     ));
+  }
+
+  Future<void> _launchUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
   }
 
   Widget _buildFeatureList(List<Map<String, String>> items) {
@@ -381,35 +397,63 @@ class _TechHighlightCard extends StatelessWidget {
   }
 }
 
-class _ContactChip extends StatelessWidget {
+class _ContactChip extends StatefulWidget {
   final IconData icon;
   final String label;
   final Color iconColor;
-  const _ContactChip(this.icon, this.label, this.iconColor);
+  final VoidCallback onTap;
+  const _ContactChip(this.icon, this.label, this.iconColor, {required this.onTap});
+
+  @override
+  State<_ContactChip> createState() => _ContactChipState();
+}
+
+class _ContactChipState extends State<_ContactChip> {
+  bool _hovered = false;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceLight,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: iconColor, size: 15),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: const TextStyle(
-              color: Color(0xFF9CA3AF),
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+          decoration: BoxDecoration(
+            color: _hovered ? AppColors.surfaceLight.withAlpha(200) : AppColors.surfaceLight,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: _hovered ? widget.iconColor.withAlpha(100) : AppColors.border,
             ),
+            boxShadow: _hovered
+                ? [
+                    BoxShadow(
+                      color: widget.iconColor.withAlpha(20),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    )
+                  ]
+                : [],
           ),
-        ],
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(widget.icon, color: widget.iconColor, size: 15),
+              const SizedBox(width: 8),
+              Text(
+                widget.label,
+                style: TextStyle(
+                  color: _hovered ? Colors.white : const Color(0xFF9CA3AF),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

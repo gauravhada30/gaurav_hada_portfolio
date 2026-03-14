@@ -303,7 +303,7 @@ class _HomeSectionState extends State<HomeSection>
 
         // Bio
         Text(
-          "I'm Gaurav Hada — Software Engineer crafting production-grade iOS & Android apps "
+          "I'm Gaurav Hada - Software Engineer crafting production-grade iOS & Android apps "
           "with pixel-perfect UI, scalable Firebase backends, and AI-accelerated workflows. "
           "From ideation to production.",
           textAlign: isMobile ? TextAlign.center : TextAlign.left,

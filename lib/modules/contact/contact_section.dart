@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/responsive.dart';
+import '../../data/portfolio_data.dart';
 import '../../widgets/section_header.dart';
 import '../../widgets/scroll_reveal.dart';
 
@@ -9,22 +10,22 @@ class ContactSection extends StatelessWidget {
   final ScrollController scrollController;
   const ContactSection({super.key, required this.scrollController});
 
-  static const _links = [
+  static final _links = [
     (
-      'hadagaurav56@gmail.com',
+      PortfolioData.email,
       Icons.email_outlined,
-      'mailto:hadagaurav56@gmail.com',
+      'mailto:${PortfolioData.email}',
     ),
-    ('+91-9001852825', Icons.phone_outlined, 'tel:+919001852825'),
+    (PortfolioData.phone, Icons.phone_outlined, 'tel:${PortfolioData.phone}'),
     (
-      'linkedin.com/in/gaurav-hada',
+      'linkedin.com/gaurav-hada',
       Icons.work_outline,
-      'https://linkedin.com/in/gaurav-hada',
+      PortfolioData.linkedIn,
     ),
     (
       'github.com/gauravhada30',
       Icons.code_rounded,
-      'https://github.com/gauravhada30',
+      PortfolioData.github,
     ),
   ];
 
