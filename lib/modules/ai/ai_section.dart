@@ -1,141 +1,273 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../../data/portfolio_data.dart';
-import '../../models/ai_tool_model.dart';
+
 import '../../utils/app_colors.dart';
 import '../../utils/responsive.dart';
+import '../../widgets/section_header.dart';
+import '../../widgets/scroll_reveal.dart';
 
 class AiSection extends StatelessWidget {
   final ValueNotifier<String> activeSectionNotifier;
+  final ScrollController scrollController;
 
-  const AiSection({super.key, required this.activeSectionNotifier});
+  const AiSection({
+    super.key,
+    required this.activeSectionNotifier,
+    required this.scrollController,
+  });
+
+  static const _tools = [
+    {
+      'name': 'Cursor IDE',
+      'badge': 'Daily Driver',
+      'badgeColor': 0xFF6366F1,
+      'description':
+          'AI-native code editor with codebase-wide context. I use Cursor for multi-file refactors, feature implementation, and live AI pair programming across all Flutter projects.',
+      'capabilities': ['Codebase Indexing', 'Multi-file Edits', 'AI Chat', 'Tab Autocomplete'],
+      'assetPath': 'assets/images/icon_cursor.png',
+      'accent': 0xFF6366F1,
+    },
+    {
+      'name': 'Claude 3.5 Sonnet',
+      'badge': 'Architecture',
+      'badgeColor': 0xFFD97757,
+      'description':
+          'Anthropic\'s Claude excels at complex reasoning tasks. I use it for architectural decisions, code review, UI generation from prompts, and complex Flutter widget design.',
+      'capabilities': ['System Design', 'UI Generation', 'Code Review', 'Debugging'],
+      'assetPath': 'assets/images/icon_claude.png',
+      'accent': 0xFFD97757,
+    },
+    {
+      'name': 'ChatGPT-4o',
+      'badge': 'Problem Solving',
+      'badgeColor': 0xFF10A37F,
+      'description':
+          'GPT-4o for algorithm design, state management patterns, and explaining complex Dart/Flutter internals. Excellent for researching best practices and edge cases.',
+      'capabilities': ['Algorithm Design', 'GetX / BLoC Help', 'API Patterns', 'Documentation'],
+      'assetPath': 'assets/images/icon_chatgpt.png',
+      'accent': 0xFF10A37F,
+    },
+    {
+      'name': 'GitHub Copilot',
+      'badge': 'In-editor',
+      'badgeColor': 0xFF1F6FEB,
+      'description':
+          'Inline AI suggestions directly in VS Code / Android Studio. Accelerates boilerplate, widget scaffolding, and repetitive patterns so I can focus on product-level logic.',
+      'capabilities': ['Inline Suggestions', 'Boilerplate Gen', 'Comment-to-Code', 'Test Gen'],
+      'assetPath': 'assets/images/icon_github_copilot.png',
+      'accent': 0xFF1F6FEB,
+    },
+    {
+      'name': 'Gemini Advanced',
+      'badge': 'Google Ecosystem',
+      'badgeColor': 0xFF4285F4,
+      'description':
+          'Google\'s multimodal AI — integrated with Android Studio, Firebase, and Google Cloud. Used for Firebase security rules generation and Play Console optimization.',
+      'capabilities': ['Android Studio Bot', 'Firebase Rules', 'Cloud Integration', 'Multimodal'],
+      'assetPath': 'assets/images/icon_gemini.png',
+      'accent': 0xFF4285F4,
+    },
+    {
+      'name': 'Antigravity',
+      'badge': 'Autonomous',
+      'badgeColor': 0xFFF59E0B,
+      'description':
+          'Fully autonomous agentic coding — executes multi-step repository-wide transformations, handles deployments, runs analysis, and writes entire features from a single prompt.',
+      'capabilities': ['Autonomous Coding', 'Multi-step Tasks', 'Repo-wide Edits', 'CI/CD'],
+      'assetPath': 'assets/images/icon_ai_brain.png',
+      'accent': 0xFFF59E0B,
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
     final isMobile = Responsive.isMobile(context);
     final isTablet = Responsive.isTablet(context);
     final padding = Responsive.horizontalPadding(context);
-
-    // Dynamic grid sizing
-    int crossCount = isMobile ? 1 : (isTablet ? 2 : 3);
+    final cols = isMobile ? 1 : (isTablet ? 2 : 3);
 
     return Container(
       width: double.infinity,
-      color: AppColors.background,
+      color: AppColors.surface,
       padding: EdgeInsets.symmetric(
         horizontal: padding,
-        vertical: isMobile ? 60 : 100,
+        vertical: isMobile ? 70 : 100,
       ),
       child: Column(
-        crossAxisAlignment: isMobile
-            ? CrossAxisAlignment.center
-            : CrossAxisAlignment.start,
         children: [
-          // Section Header
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.auto_awesome, color: AppColors.amber, size: 28),
-              const SizedBox(width: 16),
-              const Text(
-                'AI Tools & Workflows',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.textPrimary,
-                  letterSpacing: -0.5,
-                ),
-              ),
-            ],
-          ).animate().fadeIn(duration: 600.ms).slideX(begin: -0.1),
-
+          const SectionHeader(
+            tag: 'AI POWERED',
+            title: 'AI Tools & Workflows',
+            subtitle:
+                'How I leverage cutting-edge AI to ship production Flutter apps 5× faster',
+          ),
           const SizedBox(height: 16),
-          Text(
-            'Leveraging the latest in AI to accelerate development, ensure code quality, and build scalable architectures instantly.',
-            textAlign: isMobile ? TextAlign.center : TextAlign.left,
-            style: const TextStyle(
-              fontSize: 16,
-              color: AppColors.textSecondary,
-              height: 1.6,
-            ),
-          ).animate().fadeIn(delay: 200.ms),
 
-          const SizedBox(height: 60),
+          // AI stat ribbon
+          _buildAiRibbon().animate().fadeIn(delay: 250.ms).slideY(begin: 0.1),
 
-          // Tools Grid
-          ..._buildGrid(crossCount, isMobile),
+          const SizedBox(height: 44),
+
+          // Cards grid
+          _buildGrid(cols, isMobile),
         ],
       ),
     );
   }
 
-  List<Widget> _buildGrid(int crossCount, bool isMobile) {
+  Widget _buildAiRibbon() {
+    final items = [
+      {'emoji': '⚡', 'value': '5×', 'label': 'Faster Delivery'},
+      {'emoji': '🤖', 'value': '6+', 'label': 'AI Tools Used Daily'},
+      {'emoji': '📝', 'value': '1500+', 'label': 'AI Responses Evaluated'},
+      {'emoji': '🏆', 'value': '30%', 'label': 'Model Quality Improved'},
+    ];
+
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 28),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceLight,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.gold.withAlpha(40)),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth < 500) {
+            return Wrap(
+              spacing: 20,
+              runSpacing: 16,
+              alignment: WrapAlignment.center,
+              children: items.map(_buildRibbonItem).toList(),
+            );
+          }
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: items.map((item) {
+              return Expanded(
+                child: Row(
+                  children: [
+                    _buildRibbonItem(item),
+                    if (item != items.last)
+                      Container(
+                        width: 1,
+                        height: 36,
+                        margin: const EdgeInsets.only(left: 20),
+                        color: AppColors.border,
+                      ),
+                  ],
+                ),
+              );
+            }).toList(),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildRibbonItem(Map<String, String> item) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(item['emoji']!, style: const TextStyle(fontSize: 22)),
+          const SizedBox(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ShaderMask(
+                shaderCallback: (b) => AppColors.primaryGradient.createShader(b),
+                child: Text(
+                  item['value']!,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              Text(
+                item['label']!,
+                style: const TextStyle(
+                  color: Color(0xFF6B7280),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGrid(int cols, bool isMobile) {
     final rows = <Widget>[];
-    for (int i = 0; i < PortfolioData.aiTools.length; i += crossCount) {
-      final rowItems = PortfolioData.aiTools.sublist(
+    for (int i = 0; i < _tools.length; i += cols) {
+      final rowItems = _tools.sublist(
         i,
-        (i + crossCount).clamp(0, PortfolioData.aiTools.length),
+        (i + cols).clamp(0, _tools.length),
       );
       rows.add(
         Padding(
-          padding: const EdgeInsets.only(bottom: 24),
-          child: SizedBox(
-            height: isMobile ? 220 : 200,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                ...rowItems.asMap().entries.map((e) {
-                  final idx = i + e.key;
-                  return Expanded(
-                    child: Padding(
+          padding: const EdgeInsets.only(bottom: 20),
+          child: isMobile
+              ? Column(
+                  children: rowItems.asMap().entries.map((e) {
+                    return Padding(
                       padding: EdgeInsets.only(
-                        right: e.key < rowItems.length - 1 ? 24 : 0,
+                        bottom: e.key < rowItems.length - 1 ? 20 : 0,
                       ),
                       child: _AiToolCard(
-                        tool: e.value,
-                        index: idx,
-                        crossCount: crossCount,
+                        tool: _tools[i + e.key],
+                        index: i + e.key,
                         activeSectionNotifier: activeSectionNotifier,
+                        scrollController: scrollController,
                       ),
-                    ),
-                  );
-                }),
-                // Fill empty spaces in the last row if needed
-                if (rowItems.length < crossCount)
-                  ...List.generate(
-                    crossCount - rowItems.length,
-                    (index) => Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.only(
-                          right: index < (crossCount - rowItems.length - 1)
-                              ? 24
-                              : 0,
+                    );
+                  }).toList(),
+                )
+              : Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ...rowItems.asMap().entries.map((e) => Expanded(
+                            child: Padding(
+                              padding: EdgeInsets.only(
+                                right: e.key < rowItems.length - 1 ? 20 : 0,
+                              ),
+                              child: _AiToolCard(
+                                tool: _tools[i + e.key],
+                                index: i + e.key,
+                                activeSectionNotifier: activeSectionNotifier,
+                                scrollController: scrollController,
+                              ),
+                            ),
+                          )),
+                      if (rowItems.length < cols)
+                        ...List.generate(
+                          cols - rowItems.length,
+                          (_) => const Expanded(child: SizedBox()),
                         ),
-                        child: const SizedBox.shrink(),
-                      ),
-                    ),
+                    ],
                   ),
-              ],
-            ),
-          ),
         ),
       );
     }
-    return rows;
+    return Column(children: rows);
   }
 }
 
 class _AiToolCard extends StatefulWidget {
-  final AiToolModel tool;
+  final Map<String, dynamic> tool;
   final int index;
-  final int crossCount;
   final ValueNotifier<String> activeSectionNotifier;
+  final ScrollController scrollController;
 
   const _AiToolCard({
     required this.tool,
     required this.index,
-    required this.crossCount,
     required this.activeSectionNotifier,
+    required this.scrollController,
   });
 
   @override
@@ -144,157 +276,148 @@ class _AiToolCard extends StatefulWidget {
 
 class _AiToolCardState extends State<_AiToolCard> {
   bool _hovered = false;
-  bool _isVisible = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _checkVisibility();
-    widget.activeSectionNotifier.addListener(_checkVisibility);
-  }
-
-  @override
-  void dispose() {
-    widget.activeSectionNotifier.removeListener(_checkVisibility);
-    super.dispose();
-  }
-
-  void _checkVisibility() {
-    // If user reaches ai section, or scrolls past. We'll use 'skills', 'ai', 'contact' to trigger.
-    final sec = widget.activeSectionNotifier.value;
-    if ((sec == 'skills' || sec == 'ai' || sec == 'contact') && !_isVisible) {
-      if (mounted) setState(() => _isVisible = true);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     final t = widget.tool;
+    final accent = Color(t['accent'] as int);
+    final badge = t['badge'] as String;
+    final badgeColor = Color(t['badgeColor'] as int);
+    final caps = t['capabilities'] as List<String>;
 
-    // Convert hex string to color
-    final colorValue = int.tryParse('0xFF${t.colorHex}') ?? 0xFFF59E0B;
-    final accent = Color(colorValue);
-
-    return MouseRegion(
+    return ScrollReveal(
+      scrollController: widget.scrollController,
+      delay: (widget.index % 3) * 80,
+      child: MouseRegion(
           onEnter: (_) => setState(() => _hovered = true),
           onExit: (_) => setState(() => _hovered = false),
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOutCubic,
-            transform: Matrix4.translationValues(0, _hovered ? -8 : 0, 0),
+            duration: const Duration(milliseconds: 280),
+            transform: Matrix4.translationValues(0, _hovered ? -6 : 0, 0),
+            padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: AppColors.surfaceLight,
-              borderRadius: BorderRadius.circular(24),
+              color: _hovered ? AppColors.cardHover : AppColors.surfaceLight,
+              borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: _hovered ? accent.withAlpha(150) : AppColors.borderLight,
-                width: 1.5,
+                color: _hovered ? accent.withAlpha(120) : AppColors.border,
               ),
               boxShadow: _hovered
                   ? [
                       BoxShadow(
-                        color: accent.withAlpha(20),
-                        blurRadius: 30,
-                        offset: const Offset(0, 15),
-                      ),
+                          color: accent.withAlpha(30),
+                          blurRadius: 28,
+                          offset: const Offset(0, 12))
                     ]
                   : [
                       BoxShadow(
-                        color: Colors.black.withAlpha(5),
-                        blurRadius: 15,
-                        offset: const Offset(0, 5),
-                      ),
+                          color: Colors.black.withAlpha(25),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4))
                     ],
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(24),
-              child: Stack(
-                children: [
-                  // Bottom right glow based on brand color
-                  Positioned(
-                    right: -40,
-                    bottom: -40,
-                    child: AnimatedOpacity(
-                      opacity: _hovered ? 0.8 : 0.0,
-                      duration: const Duration(milliseconds: 300),
-                      child: Container(
-                        width: 120,
-                        height: 120,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: accent.withAlpha(40),
-                              blurRadius: 40,
-                              spreadRadius: 20,
-                            ),
-                          ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header row
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: accent.withAlpha(20),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Image.asset(
+                        t['assetPath'] as String,
+                        width: 22,
+                        height: 22,
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => Icon(
+                          Icons.smart_toy_rounded,
+                          color: accent,
+                          size: 20,
                         ),
                       ),
                     ),
-                  ),
-
-                  Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Icon and Title
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: accent.withAlpha(20),
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              child: Icon(t.icon, color: accent, size: 28),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Text(
-                                t.name,
-                                style: const TextStyle(
-                                  color: AppColors.textPrimary,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        // Description
-                        Expanded(
-                          child: Text(
-                            t.description,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            t['name'] as String,
                             style: const TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 14,
-                              height: 1.6,
+                              color: Color(0xFFF1F1F3),
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
                             ),
-                            maxLines: 4,
-                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: badgeColor.withAlpha(20),
+                        borderRadius: BorderRadius.circular(20),
+                        border:
+                            Border.all(color: badgeColor.withAlpha(60)),
+                      ),
+                      child: Text(
+                        badge,
+                        style: TextStyle(
+                          color: badgeColor,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Description
+                Text(
+                  t['description'] as String,
+                  style: const TextStyle(
+                    color: Color(0xFF9CA3AF),
+                    fontSize: 13,
+                    height: 1.65,
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 12),
+
+                // Capabilities
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: caps.map((cap) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 9, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: accent.withAlpha(15),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: accent.withAlpha(40)),
+                      ),
+                      child: Text(
+                        cap,
+                        style: TextStyle(
+                          color: accent,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
             ),
           ),
-        )
-        .animate(target: _isVisible ? 1 : 0)
-        .fadeIn(
-          duration: 600.ms,
-          delay: Duration(milliseconds: (100 * (widget.index % widget.crossCount)).toInt()),
-        )
-        .scale(
-          begin: const Offset(0.9, 0.9),
-          curve: Curves.easeOutBack,
-          duration: 600.ms,
-        );
+        ),
+      );
   }
 }

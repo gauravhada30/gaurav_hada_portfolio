@@ -38,7 +38,7 @@ class _AppNavbarState extends State<AppNavbar> {
   }
 
   void _onScroll() {
-    final scrolled = widget.scrollController.offset > 50;
+    final scrolled = widget.scrollController.offset > 30;
     if (scrolled != _isScrolled) setState(() => _isScrolled = scrolled);
   }
 
@@ -64,24 +64,28 @@ class _AppNavbarState extends State<AppNavbar> {
     final padding = Responsive.horizontalPadding(context);
 
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 250),
       decoration: BoxDecoration(
-        color: _isScrolled ? Colors.white.withAlpha(240) : Colors.transparent,
+        color: _isScrolled
+            ? AppColors.surface.withAlpha(220)
+            : Colors.transparent,
         border: _isScrolled
-            ? Border(bottom: BorderSide(color: AppColors.border, width: 1))
+            ? const Border(
+                bottom: BorderSide(color: AppColors.border, width: 1),
+              )
             : null,
         boxShadow: _isScrolled
             ? [
                 BoxShadow(
-                  color: Colors.black.withAlpha(5),
-                  blurRadius: 20,
+                  color: Colors.black.withAlpha(80),
+                  blurRadius: 30,
                   offset: const Offset(0, 4),
                 ),
               ]
             : [],
       ),
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: padding, vertical: 16),
+        padding: EdgeInsets.symmetric(horizontal: padding, vertical: 14),
         child: Row(
           children: [
             // Logo
@@ -91,31 +95,41 @@ class _AppNavbarState extends State<AppNavbar> {
                 cursor: SystemMouseCursors.click,
                 child: Row(
                   children: [
-                    ValueListenableBuilder<String>(
-                      valueListenable:
-                          widget.activeSectionNotifier ?? ValueNotifier(''),
-                      builder: (context, activeSection, child) {
-                        return Text(
-                          'Gaurav',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                            color: activeSection == 'home'
-                                ? AppColors.gold
-                                : AppColors.textPrimary,
-                            letterSpacing: -0.5,
-                          ),
-                        );
-                      },
+                    ShaderMask(
+                      shaderCallback: (b) =>
+                          AppColors.primaryGradient.createShader(b),
+                      child: const Text(
+                        'GH',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                    ),
+                    const Text(
+                      '.',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.gold,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Container(
+                      width: 1,
+                      height: 16,
+                      color: AppColors.border,
                     ),
                     const SizedBox(width: 10),
                     const Text(
-                      'Hada.',
+                      'Gaurav Hada',
                       style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
-                        letterSpacing: -0.5,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textSecondary,
+                        letterSpacing: 0.3,
                       ),
                     ),
                   ],
@@ -158,35 +172,8 @@ class _AppNavbarState extends State<AppNavbar> {
               onTap: () => _scrollTo(item.key),
             ),
           ),
-        const SizedBox(width: 24),
-        GestureDetector(
-          onTap: () => _scrollTo('contact'),
-          child: MouseRegion(
-            cursor: SystemMouseCursors.click,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-              decoration: BoxDecoration(
-                color: AppColors.darkAccent,
-                borderRadius: BorderRadius.circular(30),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.darkAccent.withAlpha(30),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: const Text(
-                'Hire Me',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-          ),
-        ),
+        const SizedBox(width: 20),
+        _HireMeButton(onTap: () => _scrollTo('contact')),
       ],
     );
   }
@@ -200,9 +187,68 @@ class _AppNavbarState extends State<AppNavbar> {
           decoration: BoxDecoration(
             border: Border.all(color: AppColors.border),
             borderRadius: BorderRadius.circular(8),
-            color: Colors.white,
+            color: AppColors.surface,
           ),
-          child: const Icon(Icons.menu, color: AppColors.textPrimary, size: 20),
+          child: const Icon(
+            Icons.menu_rounded,
+            color: AppColors.textPrimary,
+            size: 20,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _HireMeButton extends StatefulWidget {
+  final VoidCallback onTap;
+  const _HireMeButton({required this.onTap});
+
+  @override
+  State<_HireMeButton> createState() => _HireMeButtonState();
+}
+
+class _HireMeButtonState extends State<_HireMeButton> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 9),
+          decoration: BoxDecoration(
+            gradient: _hovered ? AppColors.primaryGradient : null,
+            color: _hovered ? null : Colors.transparent,
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(
+              color: _hovered ? Colors.transparent : AppColors.gold.withAlpha(150),
+              width: 1.5,
+            ),
+            boxShadow: _hovered
+                ? [
+                    BoxShadow(
+                      color: AppColors.gold.withAlpha(60),
+                      blurRadius: 15,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : [],
+          ),
+          child: Text(
+            'Hire Me',
+            style: TextStyle(
+              color: _hovered ? Colors.black : AppColors.gold,
+              fontWeight: FontWeight.w700,
+              fontSize: 13,
+              letterSpacing: 0.3,
+            ),
+          ),
         ),
       ),
     );
@@ -241,7 +287,7 @@ class _NavButtonState extends State<_NavButton> {
       child: GestureDetector(
         onTap: widget.onTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -251,16 +297,19 @@ class _NavButtonState extends State<_NavButton> {
                   color: (widget.isActive || _hovered)
                       ? AppColors.gold
                       : AppColors.textSecondary,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
+                  fontWeight:
+                      widget.isActive ? FontWeight.w700 : FontWeight.w500,
+                  fontSize: 13,
+                  letterSpacing: 0.2,
                 ),
               ),
+              const SizedBox(height: 3),
               AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 height: 2,
-                width: (widget.isActive || _hovered) ? 20 : 0,
+                width: (widget.isActive || _hovered) ? 18 : 0,
                 decoration: BoxDecoration(
-                  color: AppColors.gold,
+                  gradient: AppColors.primaryGradient,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),

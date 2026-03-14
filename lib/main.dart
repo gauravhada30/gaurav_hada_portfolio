@@ -13,7 +13,7 @@ class PortfolioApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: 'Gaurav Hada — Flutter Developer',
+      title: 'Gaurav Hada — Software Developer',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.darkTheme,
       home: const PortfolioPage(),

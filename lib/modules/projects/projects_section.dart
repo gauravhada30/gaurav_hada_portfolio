@@ -1,32 +1,36 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/responsive.dart';
 import '../../data/portfolio_data.dart';
 import '../../models/project_model.dart';
 import '../../widgets/section_header.dart';
-import 'package:visibility_detector/visibility_detector.dart';
+
+import '../../widgets/scroll_reveal.dart';
 
 class ProjectsSection extends StatelessWidget {
   final ValueNotifier<String> activeSectionNotifier;
+  final ScrollController scrollController;
 
-  const ProjectsSection({super.key, required this.activeSectionNotifier});
+  const ProjectsSection({
+    super.key,
+    required this.activeSectionNotifier,
+    required this.scrollController,
+  });
 
   @override
   Widget build(BuildContext context) {
     final isMobile = Responsive.isMobile(context);
     final isTablet = Responsive.isTablet(context);
     final padding = Responsive.horizontalPadding(context);
-
-    int cols = isMobile ? 1 : (isTablet ? 2 : 3);
+    final cols = isMobile ? 1 : (isTablet ? 2 : 3);
 
     return Container(
       width: double.infinity,
-      color: AppColors.surfaceLight,
+      color: AppColors.surface,
       padding: EdgeInsets.symmetric(
         horizontal: padding,
-        vertical: isMobile ? 80 : 120,
+        vertical: isMobile ? 70 : 100,
       ),
       child: Column(
         children: [
@@ -34,9 +38,9 @@ class ProjectsSection extends StatelessWidget {
             tag: 'SELECTED WORK',
             title: 'Featured Projects',
             subtitle:
-                'A selection of apps built focusing on performance, UI/UX, and scalability',
+                'Production-grade Flutter apps spanning e-commerce, iOS/Android, EdTech, and IoT',
           ),
-          const SizedBox(height: 60),
+          const SizedBox(height: 50),
           _buildGrid(cols, isMobile),
         ],
       ),
@@ -44,68 +48,60 @@ class ProjectsSection extends StatelessWidget {
   }
 
   Widget _buildGrid(int cols, bool isMobile) {
-    if (cols == 1) {
-      return Column(
-        children: PortfolioData.projects
-            .asMap()
-            .entries
-            .map(
-              (e) => Padding(
-                padding: const EdgeInsets.only(bottom: 24),
-                child: _ProjectCard(
-                  project: e.value,
-                  index: e.key,
-                  activeSectionNotifier: activeSectionNotifier,
-                ),
-              ),
-            )
-            .toList(),
-      );
-    }
-
-    final List<Widget> gridRows = [];
+    final rows = <Widget>[];
     for (int i = 0; i < PortfolioData.projects.length; i += cols) {
       final rowItems = PortfolioData.projects.sublist(
         i,
         (i + cols).clamp(0, PortfolioData.projects.length),
       );
-
-      gridRows.add(
+      rows.add(
         Padding(
-          padding: const EdgeInsets.only(bottom: 24),
-          child: SizedBox(
-            height: isMobile ? 580 : 560,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                ...rowItems.asMap().entries.map((e) {
-                  return Expanded(
-                    child: Padding(
+          padding: const EdgeInsets.only(bottom: 20),
+          child: isMobile
+              ? Column(
+                  children: rowItems.asMap().entries.map((e) {
+                    return Padding(
                       padding: EdgeInsets.only(
-                        right: e.key < rowItems.length - 1 ? 24 : 0,
+                        bottom: e.key < rowItems.length - 1 ? 20 : 0,
                       ),
                       child: _ProjectCard(
                         project: e.value,
                         index: i + e.key,
                         activeSectionNotifier: activeSectionNotifier,
+                        scrollController: scrollController,
                       ),
-                    ),
-                  );
-                }),
-                if (rowItems.length < cols)
-                  ...List.generate(
-                    cols - rowItems.length,
-                    (_) => const Expanded(child: SizedBox()),
+                    );
+                  }).toList(),
+                )
+              : IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      ...rowItems.asMap().entries.map((e) => Expanded(
+                            child: Padding(
+                              padding: EdgeInsets.only(
+                                right: e.key < rowItems.length - 1 ? 20 : 0,
+                              ),
+                              child: _ProjectCard(
+                                project: e.value,
+                                index: i + e.key,
+                                activeSectionNotifier: activeSectionNotifier,
+                                scrollController: scrollController,
+                              ),
+                            ),
+                          )),
+                      if (rowItems.length < cols)
+                        ...List.generate(
+                          cols - rowItems.length,
+                          (_) => const Expanded(child: SizedBox()),
+                        ),
+                    ],
                   ),
-              ],
-            ),
-          ),
+                ),
         ),
       );
     }
-
-    return Column(children: gridRows);
+    return Column(children: rows);
   }
 }
 
@@ -113,11 +109,13 @@ class _ProjectCard extends StatefulWidget {
   final ProjectModel project;
   final int index;
   final ValueNotifier<String> activeSectionNotifier;
+  final ScrollController scrollController;
 
   const _ProjectCard({
     required this.project,
     required this.index,
     required this.activeSectionNotifier,
+    required this.scrollController,
   });
 
   @override
@@ -126,196 +124,168 @@ class _ProjectCard extends StatefulWidget {
 
 class _ProjectCardState extends State<_ProjectCard> {
   bool _hovered = false;
-  bool _isVisible = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _checkVisibility();
-    widget.activeSectionNotifier.addListener(_checkVisibility);
-  }
-
-  @override
-  void dispose() {
-    widget.activeSectionNotifier.removeListener(_checkVisibility);
-    super.dispose();
-  }
-
-  void _checkVisibility() {
-    if ((widget.activeSectionNotifier.value == 'projects' ||
-            widget.activeSectionNotifier.value == 'contact' ||
-            widget.activeSectionNotifier.value == 'skills') &&
-        !_isVisible) {
-      if (mounted) setState(() => _isVisible = true);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     final p = widget.project;
+    final colorHex = p.accentColor.contains('0x')
+        ? p.accentColor
+        : '0xFF${p.accentColor}';
+    final accent = Color(int.tryParse(colorHex) ?? 0xFFD4AF37);
 
-    int colorValue = 0xFFD4AF37;
-    try {
-      if (p.accentColor.startsWith('0x')) {
-        colorValue = int.parse(p.accentColor);
-      }
-    } catch (_) {}
-
-    final accent = Color(colorValue);
-
-    return MouseRegion(
+    return ScrollReveal(
+      scrollController: widget.scrollController,
+      delay: (widget.index % 3) * 80,
+      child: MouseRegion(
           onEnter: (_) => setState(() => _hovered = true),
           onExit: (_) => setState(() => _hovered = false),
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            transform: Matrix4.identity()
-              ..translate(0.0, _hovered ? -8.0 : 0.0),
+            duration: const Duration(milliseconds: 280),
+            transform: Matrix4.translationValues(0, _hovered ? -6 : 0, 0),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
+              color: _hovered ? AppColors.cardHover : AppColors.surfaceLight,
+              borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: _hovered ? accent.withAlpha(50) : AppColors.border,
-                width: 1,
+                color: _hovered ? accent.withAlpha(100) : AppColors.border,
               ),
               boxShadow: _hovered
                   ? [
                       BoxShadow(
-                        color: accent.withAlpha(20),
-                        blurRadius: 30,
+                        color: accent.withAlpha(30),
+                        blurRadius: 28,
                         offset: const Offset(0, 12),
-                      ),
+                      )
                     ]
                   : [
                       BoxShadow(
-                        color: Colors.black.withAlpha(5),
-                        blurRadius: 15,
-                        offset: const Offset(0, 5),
-                      ),
+                        color: Colors.black.withAlpha(25),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      )
                     ],
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(23),
+              borderRadius: BorderRadius.circular(20),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Image Container
+                  // Project image area
                   Container(
-                    height: 200,
+                    height: 160,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [accent.withAlpha(15), accent.withAlpha(5)],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
+                        colors: [
+                          accent.withAlpha(40),
+                          accent.withAlpha(10),
+                          AppColors.surfaceLight,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
                     ),
-                    child: Center(
-                      child: AnimatedScale(
-                        scale: _hovered ? 1.05 : 1.0,
-                        duration: const Duration(milliseconds: 300),
-                        child: Text(
-                          p.emoji,
-                          style: const TextStyle(
-                            fontSize: 80,
-                            fontFamilyFallback: [
-                              'Apple Color Emoji',
-                              'Segoe UI Emoji',
-                              'Noto Color Emoji',
-                            ],
+                    child: Stack(
+                      children: [
+                        // Grid lines
+                        Positioned.fill(
+                          child: CustomPaint(painter: _GridPainter()),
+                        ),
+                        Center(
+                          child: AnimatedScale(
+                            scale: _hovered ? 1.1 : 1.0,
+                            duration: const Duration(milliseconds: 300),
+                            child: Text(
+                              p.emoji,
+                              style: const TextStyle(
+                                fontSize: 64,
+                                fontFamilyFallback: [
+                                  'Apple Color Emoji',
+                                  'Segoe UI Emoji',
+                                  'Noto Color Emoji',
+                                ],
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                        // Badges
+                        Positioned(
+                          top: 12,
+                          left: 12,
+                          child: _PlatformBadge(p.tags),
+                        ),
+                        if (p.liveUrl != null)
+                          Positioned(
+                            top: 12,
+                            right: 12,
+                            child: _LiveBadge(accent),
+                          ),
+                      ],
                     ),
                   ),
 
-                  const Divider(height: 1, color: AppColors.borderLight),
-
-                  // Content Area
+                  // Card content
                   Padding(
-                    padding: const EdgeInsets.all(28),
+                    padding: const EdgeInsets.all(20),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Title and Live Badge
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                p.title,
-                                style: const TextStyle(
-                                  color: AppColors.textPrimary,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                            ),
-                            if (p.liveUrl != null) ...[
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.gold.withAlpha(15),
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: AppColors.gold.withAlpha(30),
-                                  ),
-                                ),
-                                child: const Icon(
-                                  Icons.outbound_rounded,
-                                  color: AppColors.gold,
-                                  size: 16,
-                                ),
-                              ),
-                            ],
-                          ],
+                        Text(
+                          p.title,
+                          style: const TextStyle(
+                            color: Color(0xFFF1F1F3),
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
-                        const SizedBox(height: 12),
-
+                        const SizedBox(height: 4),
+                        Text(
+                          p.subtitle,
+                          style: TextStyle(
+                            color: accent.withAlpha(200),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
                         Text(
                           p.description,
                           style: const TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 14,
-                            height: 1.6,
+                            color: Color(0xFF9CA3AF),
+                            fontSize: 13,
+                            height: 1.65,
                           ),
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 20),
-
-                        // Tags
+                        const SizedBox(height: 14),
                         Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
+                          spacing: 6,
+                          runSpacing: 6,
                           children: p.tags
-                              .take(3)
-                              .map((t) => _ProjectTag(t))
+                              .take(4)
+                              .map((t) => _Tag(t, accent))
                               .toList(),
                         ),
-                        const SizedBox(height: 24),
-
-                        // View Code / Live Links
+                        const SizedBox(height: 16),
                         Row(
                           children: [
-                            if (p.liveUrl != null)
+                            if (p.liveUrl != null) ...[
                               Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.only(right: 8.0),
-                                  child: _ProjectButton(
-                                    label: 'Live App',
-                                    icon: Icons.outbound_rounded,
-                                    onTap: () => _launchUrl(p.liveUrl!),
-                                  ),
+                                child: _ActionButton(
+                                  label: 'View Live',
+                                  icon: Icons.open_in_new_rounded,
+                                  filled: true,
+                                  accent: accent,
+                                  onTap: () => _launch(p.liveUrl!),
                                 ),
                               ),
+                              const SizedBox(width: 8),
+                            ],
                             if (p.githubUrl != null)
                               Expanded(
-                                child: _ProjectButton(
-                                  label: 'Source',
+                                child: _ActionButton(
+                                  label: 'GitHub',
                                   icon: Icons.code_rounded,
-                                  onTap: () => _launchUrl(p.githubUrl!),
+                                  filled: false,
+                                  accent: accent,
+                                  onTap: () => _launch(p.githubUrl!),
                                 ),
                               ),
                           ],
@@ -327,22 +297,11 @@ class _ProjectCardState extends State<_ProjectCard> {
               ),
             ),
           ),
-        )
-        .animate(target: _isVisible ? 1 : 0)
-        .fadeIn(
-          duration: 600.ms,
-          delay: Duration(milliseconds: 100 * (widget.index % 3)),
-        )
-        .scale(
-          begin: const Offset(0.9, 0.9),
-          curve: Curves.easeOutBack,
-          duration: 600.ms,
-        )
-        .blurXY(begin: 10, end: 0, duration: 500.ms)
-        .slideY(begin: 0.1, curve: Curves.easeOutQuad);
+        ),
+      );
   }
 
-  Future<void> _launchUrl(String url) async {
+  Future<void> _launch(String url) async {
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
@@ -350,24 +309,95 @@ class _ProjectCardState extends State<_ProjectCard> {
   }
 }
 
-class _ProjectTag extends StatelessWidget {
-  final String label;
-  const _ProjectTag(this.label);
+class _PlatformBadge extends StatelessWidget {
+  final List<String> tags;
+  const _PlatformBadge(this.tags);
+
+  @override
+  Widget build(BuildContext context) {
+    // Show Flutter/Android/iOS if present
+    final platformTags = tags
+        .where((t) =>
+            t.toLowerCase().contains('flutter') ||
+            t.toLowerCase().contains('android') ||
+            t.toLowerCase().contains('ios'))
+        .take(2)
+        .toList();
+    if (platformTags.isEmpty) return const SizedBox.shrink();
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: platformTags.map((t) {
+        return Container(
+          margin: const EdgeInsets.only(right: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: BoxDecoration(
+            color: Colors.black.withAlpha(120),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            t,
+            style: const TextStyle(
+              color: Color(0xFFD1D5DB),
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+}
+
+class _LiveBadge extends StatelessWidget {
+  final Color accent;
+  const _LiveBadge(this.accent);
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: AppColors.surfaceLight,
+        color: accent.withAlpha(30),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: accent.withAlpha(80)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 5,
+            height: 5,
+            decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 5),
+          Text('Live',
+              style: TextStyle(
+                  color: accent, fontSize: 10, fontWeight: FontWeight.w700)),
+        ],
+      ),
+    );
+  }
+}
+
+class _Tag extends StatelessWidget {
+  final String label;
+  final Color accent;
+  const _Tag(this.label, this.accent);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(6),
         border: Border.all(color: AppColors.border),
       ),
       child: Text(
         label,
         style: const TextStyle(
-          color: AppColors.textSecondary,
-          fontSize: 12,
+          color: Color(0xFF6B7280),
+          fontSize: 11,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -375,22 +405,26 @@ class _ProjectTag extends StatelessWidget {
   }
 }
 
-class _ProjectButton extends StatefulWidget {
+class _ActionButton extends StatefulWidget {
   final String label;
   final IconData icon;
+  final bool filled;
+  final Color accent;
   final VoidCallback onTap;
 
-  const _ProjectButton({
+  const _ActionButton({
     required this.label,
     required this.icon,
+    required this.filled,
+    required this.accent,
     required this.onTap,
   });
 
   @override
-  State<_ProjectButton> createState() => _ProjectButtonState();
+  State<_ActionButton> createState() => _ActionButtonState();
 }
 
-class _ProjectButtonState extends State<_ProjectButton> {
+class _ActionButtonState extends State<_ActionButton> {
   bool _hovered = false;
 
   @override
@@ -403,12 +437,16 @@ class _ProjectButtonState extends State<_ProjectButton> {
         onTap: widget.onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: _hovered ? AppColors.darkAccent : Colors.transparent,
+            color: widget.filled
+                ? (_hovered ? widget.accent : widget.accent.withAlpha(30))
+                : (_hovered ? AppColors.surfaceLight : Colors.transparent),
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: _hovered ? AppColors.darkAccent : AppColors.border,
+              color: widget.filled
+                  ? widget.accent.withAlpha(80)
+                  : AppColors.border,
             ),
           ),
           child: Row(
@@ -416,15 +454,19 @@ class _ProjectButtonState extends State<_ProjectButton> {
             children: [
               Icon(
                 widget.icon,
-                size: 16,
-                color: _hovered ? Colors.white : AppColors.textPrimary,
+                size: 14,
+                color: widget.filled
+                    ? (_hovered ? Colors.black87 : widget.accent)
+                    : const Color(0xFF9CA3AF),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               Text(
                 widget.label,
                 style: TextStyle(
-                  color: _hovered ? Colors.white : AppColors.textPrimary,
-                  fontSize: 13,
+                  color: widget.filled
+                      ? (_hovered ? Colors.black87 : widget.accent)
+                      : const Color(0xFF9CA3AF),
+                  fontSize: 12,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -434,4 +476,23 @@ class _ProjectButtonState extends State<_ProjectButton> {
       ),
     );
   }
+}
+
+class _GridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFF2A2A3E).withAlpha(60)
+      ..strokeWidth = 0.5;
+    const spacing = 24.0;
+    for (double x = 0; x < size.width; x += spacing) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+    }
+    for (double y = 0; y < size.height; y += spacing) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_) => false;
 }

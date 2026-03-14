@@ -1,49 +1,44 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // ── Backgrounds (Light/Modern) ──────────────
-  static const Color background = Color(
-    0xFFFAF9F6,
-  ); // Soft off-white (Alabaster)
-  static const Color surface = Color(0xFFFFFFFF); // Pure white
-  static const Color surfaceLight = Color(0xFFF3F4F6); // subtle gray
-  static const Color card = Color(0xFFFFFFFF);
+  // ── Dark Backgrounds ────────────────────────────
+  static const Color background = Color(0xFF0A0A0F);   // Deep dark near-black
+  static const Color surface = Color(0xFF12121A);       // Elevated dark surface
+  static const Color surfaceLight = Color(0xFF1A1A26); // Card surface
+  static const Color card = Color(0xFF1E1E2E);          // Card bg
+  static const Color cardHover = Color(0xFF252538);     // Card hover state
 
-  // ── Golden/Amber Accents ────────────────────
-  static const Color gold = Color(0xFFD4AF37); // Classic elegant gold
-  static const Color goldLight = Color(0xFFFDE68A); // Soft pastel gold
-  static const Color amber = Color(0xFFF59E0B); // Strong amber/orange-yellow
-  static const Color yellow = Color(0xFFEAB308); // Vivid yellow
-  static const Color darkAccent = Color(
-    0xFF111827,
-  ); // Charcoal for high contrast
+  // ── Gold/Amber Accents ──────────────────────────
+  static const Color gold = Color(0xFFD4AF37);          // Classic elegant gold
+  static const Color goldLight = Color(0xFFFFD700);     // Bright gold
+  static const Color amber = Color(0xFFF59E0B);         // Strong amber
+  static const Color yellow = Color(0xFFEAB308);        // Vivid yellow
+  static const Color darkAccent = Color(0xFFD4AF37);    // Use gold as CTA
 
-  // Old Aliases mapped to new theme to prevent build errors before updating other files
-  static const Color violet =
-      darkAccent; // Using dark contrast instead of purple
-  static const Color violetLight = Color(0xFF374151);
+  // ── Aliases ─────────────────────────────────────
+  static const Color violet = Color(0xFF7C3AED);
+  static const Color violetLight = Color(0xFF8B5CF6);
   static const Color coral = amber;
   static const Color teal = gold;
   static const Color amberOld = yellow;
-  static const Color green = Color(
-    0xFF10B981,
-  ); // Keep a green for 'current' badges
-  static const Color pink = goldLight;
+  static const Color green = Color(0xFF10B981);
+  static const Color pink = Color(0xFFEC4899);
   static const Color orange = amber;
 
-  // ── Text (Dark on light bg) ─────────────────
-  static const Color textPrimary = Color(0xFF111827); // Very dark gray/charcoal
-  static const Color textSecondary = Color(0xFF4B5563); // Medium gray
-  static const Color textMuted = Color(0xFF9CA3AF); // Light gray
+  // ── Text ─────────────────────────────────────────
+  static const Color textPrimary = Color(0xFFF1F1F3);   // Off-white
+  static const Color textSecondary = Color(0xFF9CA3AF); // Muted gray
+  static const Color textMuted = Color(0xFF4B5563);     // Very muted
 
-  // ── Borders ─────────────────────────────────
-  static const Color border = Color(0xFFE5E7EB); // Very soft gray
-  static const Color borderLight = Color(0xFFF3F4F6);
+  // ── Borders ──────────────────────────────────────
+  static const Color border = Color(0xFF2A2A3E);        // Subtle dark border
+  static const Color borderLight = Color(0xFF1E1E30);   // Even subtler
+  static const Color borderGold = Color(0x33D4AF37);    // Gold border at 20%
 
-  // ── Shadows ─────────────────────────────────
-  static const Color shadow = Color(0x0A000000); // 4% black shadow
+  // ── Shadows ──────────────────────────────────────
+  static const Color shadow = Color(0x40000000);
 
-  // ── Gradients ───────────────────────────────
+  // ── Gradients ────────────────────────────────────
   static const LinearGradient primaryGradient = LinearGradient(
     colors: [gold, amber],
     begin: Alignment.topLeft,
@@ -51,14 +46,14 @@ class AppColors {
   );
 
   static const LinearGradient heroGradient = LinearGradient(
-    colors: [gold, amber],
+    colors: [Color(0xFFFFD700), Color(0xFFF59E0B)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
-  // Remapping old gradients
   static const LinearGradient tealGradient = primaryGradient;
   static const LinearGradient coralGradient = primaryGradient;
+
   static const LinearGradient greenGradient = LinearGradient(
     colors: [Color(0xFF10B981), Color(0xFF059669)],
     begin: Alignment.topLeft,
@@ -66,19 +61,32 @@ class AppColors {
   );
 
   static const LinearGradient darkGradient = LinearGradient(
-    colors: [Color(0xFF111827), Color(0xFF1F2937)],
+    colors: [Color(0xFF0A0A0F), Color(0xFF12121A)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const LinearGradient surfaceGradient = LinearGradient(
-    colors: [Color(0xFFFFFFFF), Color(0xFFF9FAFB)],
+    colors: [Color(0xFF12121A), Color(0xFF1A1A26)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   static const RadialGradient glowGradient = RadialGradient(
-    colors: [Color(0x15D4AF37), Colors.transparent], // Gold glow
+    colors: [Color(0x25D4AF37), Colors.transparent],
     radius: 0.8,
+  );
+
+  // ── Special Decorations ──────────────────────────
+  static BoxDecoration get glassCard => BoxDecoration(
+    color: const Color(0xFF1A1A26).withAlpha(200),
+    borderRadius: BorderRadius.circular(20),
+    border: Border.all(color: border, width: 1),
+  );
+
+  static BoxDecoration get glassCardHover => BoxDecoration(
+    color: const Color(0xFF1E1E2E).withAlpha(240),
+    borderRadius: BorderRadius.circular(20),
+    border: Border.all(color: borderGold, width: 1),
   );
 }

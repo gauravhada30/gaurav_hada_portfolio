@@ -6,7 +6,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 class PortfolioData {
   // ── Personal Info ──────────────────────────────
   static const String name = 'Gaurav Hada';
-  static const String title = 'Flutter Developer';
+  static const String title = 'Software Developer';
   static const String subtitle = 'Product Designer & Mobile Engineer';
   static const String tagline =
       'Crafting scalable, production-grade Flutter applications with deep Firebase '
@@ -18,7 +18,7 @@ class PortfolioData {
   static const String github = 'https://github.com/gauravhada30';
 
   static const String bio =
-      'I\'m a passionate Flutter Engineer bridging the gap between pixel-perfect design and '
+      'I\'m a passionate Application Developer bridging the gap between pixel-perfect design and '
       'robust mobile architecture. With over 2 years of hands-on experience in shipping production '
       'applications, I specialize in building complete digital products using Flutter, Dart, GetX, and Firebase.\n\n'
       'From single-handedly architecting a full B2B/B2C agritech platform at Eravan to collaborating '
@@ -303,7 +303,7 @@ class PortfolioData {
       name: 'GitHub Copilot',
       description:
           'Inline code prediction, rapid boilerplate generation, and continuous predictive typing.',
-      icon: FontAwesomeIcons.githubSquare,
+      icon: FontAwesomeIcons.squareGithub,
       colorHex: '1F2328', // GitHub dark
     ),
     AiToolModel(

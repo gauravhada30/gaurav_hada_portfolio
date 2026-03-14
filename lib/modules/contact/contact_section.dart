@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/responsive.dart';
 import '../../widgets/section_header.dart';
+import '../../widgets/scroll_reveal.dart';
 
 class ContactSection extends StatelessWidget {
-  const ContactSection({super.key});
+  final ScrollController scrollController;
+  const ContactSection({super.key, required this.scrollController});
 
   static const _links = [
     (
@@ -39,12 +40,9 @@ class ContactSection extends StatelessWidget {
           width: double.infinity,
           padding: EdgeInsets.symmetric(
             horizontal: padding,
-            vertical: isMobile ? 80 : 120,
+            vertical: isMobile ? 70 : 100,
           ),
-          decoration: const BoxDecoration(
-            color: AppColors.background,
-            border: Border(top: BorderSide(color: AppColors.borderLight)),
-          ),
+          color: AppColors.background,
           child: Column(
             children: [
               const SectionHeader(
@@ -53,161 +51,156 @@ class ContactSection extends StatelessWidget {
                 subtitle:
                     "Open for Flutter dev roles, startup opportunities, and freelance projects",
               ),
-              const SizedBox(height: 60),
-
-              // Elegant Call-To-Action Card
-              Container(
-                constraints: const BoxConstraints(maxWidth: 680),
-                padding: EdgeInsets.all(isMobile ? 32 : 48),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: AppColors.gold.withAlpha(40)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.gold.withAlpha(10),
-                      blurRadius: 40,
-                      offset: const Offset(0, 15),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.surfaceLight,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: AppColors.border),
-                      ),
-                      child: const Icon(
-                        Icons.handshake_rounded,
-                        size: 36,
-                        color: AppColors.amber,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    const Text(
-                      "Ready to craft your next big app?",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 26,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      "From robust Flutter front-ends to scalable Firebase backends, "
-                      "I bring aesthetic design and high-performance engineering together.",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 16,
-                        height: 1.6,
-                      ),
-                    ),
-                    const SizedBox(height: 36),
-                    GestureDetector(
-                      onTap: () => _launch('mailto:hadagaurav56@gmail.com'),
-                      child: MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 40,
-                            vertical: 18,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.darkAccent,
-                            borderRadius: BorderRadius.circular(100),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.darkAccent.withAlpha(40),
-                                blurRadius: 20,
-                                offset: const Offset(0, 8),
-                              ),
-                            ],
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'Send an Email',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              SizedBox(width: 12),
-                              Icon(
-                                Icons.send_rounded,
-                                color: Colors.white,
-                                size: 18,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1),
-
               const SizedBox(height: 50),
 
-              // Contact links row/grid
+              // CTA Card with glow
+              ScrollReveal(
+                scrollController: scrollController,
+                delay: 100,
+                child: Container(
+                  constraints: const BoxConstraints(maxWidth: 640),
+                  padding: EdgeInsets.all(isMobile ? 28 : 44),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceLight,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: AppColors.gold.withAlpha(60)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.gold.withAlpha(20),
+                        blurRadius: 50,
+                        offset: const Offset(0, 20),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      // Glowing icon
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          gradient: AppColors.primaryGradient,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.gold.withAlpha(80),
+                              blurRadius: 20,
+                              spreadRadius: 5,
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.handshake_rounded,
+                          size: 32,
+                          color: Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 22),
+                      const Text(
+                        "Ready to craft your next big app?",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        "From robust Flutter front-ends to scalable Firebase backends, "
+                        "I bring aesthetic design and high-performance engineering together.",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 14,
+                          height: 1.7,
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+                      _SendEmailButton(
+                          onTap: () => _launch('mailto:hadagaurav56@gmail.com')),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 44),
+
+              // Contact links
               Wrap(
-                spacing: 16,
-                runSpacing: 16,
+                spacing: 12,
+                runSpacing: 12,
                 alignment: WrapAlignment.center,
-                children: _links.map((l) => _ContactCard(l)).toList(),
+                children: _links.asMap().entries.map((e) => ScrollReveal(
+                      scrollController: scrollController,
+                      delay: e.key * 80,
+                      child: _ContactCard(e.value),
+                    )).toList(),
               ),
             ],
           ),
         ),
 
-        // Deep Footer
+        // Footer
         Container(
           width: double.infinity,
-          color: AppColors.darkAccent, // Dark charcoal footer
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 36),
+          decoration: const BoxDecoration(
+            color: AppColors.surface,
+            border: Border(top: BorderSide(color: AppColors.border)),
+          ),
           child: Column(
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    'Gaurav',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.gold,
-                      letterSpacing: -0.5,
-                    ),
+              // Logo
+              ShaderMask(
+                shaderCallback: (b) =>
+                    AppColors.primaryGradient.createShader(b),
+                child: const Text(
+                  'Gaurav Hada.',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    letterSpacing: 1,
                   ),
-                  const SizedBox(width: 10),
-                  const Text(
-                    'Hada',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '© ${DateTime.now().year} Gaurav Hada · Crafted with Flutter & AI-driven architecture',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: AppColors.textMuted,
+                  fontSize: 12,
+                  letterSpacing: 0.2,
+                ),
               ),
               const SizedBox(height: 16),
-              Text(
-                '© ${DateTime.now().year} Gaurav Hada. Crafted with Flutter & AI-driven architecture.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white.withAlpha(150),
-                  fontSize: 13,
-                ),
+              // Tech pills
+              Wrap(
+                spacing: 8,
+                alignment: WrapAlignment.center,
+                children: ['Flutter', 'Firebase', 'Dart', 'GetX', 'Riverpod']
+                    .map(
+                      (t) => Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceLight,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: AppColors.border),
+                        ),
+                        child: Text(
+                          t,
+                          style: const TextStyle(
+                            color: AppColors.textMuted,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    )
+                    .toList(),
               ),
             ],
           ),
@@ -221,6 +214,77 @@ class ContactSection extends StatelessWidget {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
+  }
+}
+
+class _SendEmailButton extends StatefulWidget {
+  final VoidCallback onTap;
+  const _SendEmailButton({required this.onTap});
+
+  @override
+  State<_SendEmailButton> createState() => _SendEmailButtonState();
+}
+
+class _SendEmailButtonState extends State<_SendEmailButton> {
+  bool _hovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 16),
+          decoration: BoxDecoration(
+            gradient: AppColors.primaryGradient,
+            borderRadius: BorderRadius.circular(100),
+            boxShadow: _hovered
+                ? [
+                    BoxShadow(
+                      color: AppColors.gold.withAlpha(100),
+                      blurRadius: 25,
+                      offset: const Offset(0, 8),
+                    ),
+                  ]
+                : [
+                    BoxShadow(
+                      color: AppColors.gold.withAlpha(50),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Send an Email',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 15,
+                ),
+              ),
+              const SizedBox(width: 10),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                transform:
+                    Matrix4.translationValues(_hovered ? 4 : 0, 0, 0),
+                child: const Icon(
+                  Icons.send_rounded,
+                  color: Colors.black,
+                  size: 16,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -247,48 +311,40 @@ class _ContactCardState extends State<_ContactCard> {
         onTap: () => _launch(url),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 250),
-          transform: Matrix4.identity()..translate(0.0, _hovered ? -3.0 : 0.0),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          transform: Matrix4.translationValues(0.0, _hovered ? -3.0 : 0.0, 0.0),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           decoration: BoxDecoration(
             color: _hovered ? AppColors.surfaceLight : AppColors.surface,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: _hovered ? AppColors.darkAccent : AppColors.border,
+              color: _hovered ? AppColors.gold.withAlpha(80) : AppColors.border,
             ),
             boxShadow: _hovered
                 ? [
                     BoxShadow(
-                      color: AppColors.darkAccent.withAlpha(10),
+                      color: AppColors.gold.withAlpha(15),
                       blurRadius: 15,
                       offset: const Offset(0, 5),
                     ),
                   ]
-                : [
-                    BoxShadow(
-                      color: Colors.black.withAlpha(2),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
+                : [],
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
                 icon,
-                color: _hovered
-                    ? AppColors.darkAccent
-                    : AppColors.textSecondary,
-                size: 20,
+                color: _hovered ? AppColors.gold : AppColors.textSecondary,
+                size: 18,
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               Text(
                 label,
                 style: TextStyle(
                   color: _hovered
                       ? AppColors.textPrimary
                       : AppColors.textSecondary,
-                  fontSize: 14,
+                  fontSize: 13,
                   fontWeight: FontWeight.w600,
                 ),
               ),

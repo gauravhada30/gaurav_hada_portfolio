@@ -52,8 +52,8 @@ class _PortfolioPageState extends State<PortfolioPage> {
   }
 
   void _onVisibilityChanged(String section, double fraction) {
-    if (fraction > 0.3) {
-      // Delay to avoid build phase errors
+    // Trigger at just 5% visible — almost immediately on scroll
+    if (fraction > 0.05) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_activeSection.value != section) {
           _activeSection.value = section;
@@ -78,7 +78,7 @@ class _PortfolioPageState extends State<PortfolioPage> {
               children: [
                 // Anchor for home section
                 SizedBox(key: _sectionKeys['home'], height: 0),
-                const SizedBox(height: 70),
+                const SizedBox(height: 20),
                 VisibilityDetector(
                   key: const Key('vd-home'),
                   onVisibilityChanged: (i) =>
@@ -93,42 +93,42 @@ class _PortfolioPageState extends State<PortfolioPage> {
                   key: const Key('vd-about'),
                   onVisibilityChanged: (i) =>
                       _onVisibilityChanged('about', i.visibleFraction),
-                  child: const AboutSection(),
+                  child: AboutSection(scrollController: _scrollController),
                 ),
                 SizedBox(key: _sectionKeys['experience'], height: 0),
                 VisibilityDetector(
                   key: const Key('vd-exp'),
                   onVisibilityChanged: (i) =>
                       _onVisibilityChanged('experience', i.visibleFraction),
-                  child: const ExperienceSection(),
+                  child: ExperienceSection(scrollController: _scrollController),
                 ),
                 SizedBox(key: _sectionKeys['projects'], height: 0),
                 VisibilityDetector(
                   key: const Key('vd-proj'),
                   onVisibilityChanged: (i) =>
                       _onVisibilityChanged('projects', i.visibleFraction),
-                  child: ProjectsSection(activeSectionNotifier: _activeSection),
+                  child: ProjectsSection(activeSectionNotifier: _activeSection, scrollController: _scrollController),
                 ),
                 SizedBox(key: _sectionKeys['skills'], height: 0),
                 VisibilityDetector(
                   key: const Key('vd-skills'),
                   onVisibilityChanged: (i) =>
                       _onVisibilityChanged('skills', i.visibleFraction),
-                  child: SkillsSection(activeSectionNotifier: _activeSection),
+                  child: SkillsSection(activeSectionNotifier: _activeSection, scrollController: _scrollController),
                 ),
                 SizedBox(key: _sectionKeys['ai'], height: 0),
                 VisibilityDetector(
                   key: const Key('vd-ai'),
                   onVisibilityChanged: (i) =>
                       _onVisibilityChanged('ai', i.visibleFraction),
-                  child: AiSection(activeSectionNotifier: _activeSection),
+                  child: AiSection(activeSectionNotifier: _activeSection, scrollController: _scrollController),
                 ),
                 SizedBox(key: _sectionKeys['contact'], height: 0),
                 VisibilityDetector(
                   key: const Key('vd-contact'),
                   onVisibilityChanged: (i) =>
                       _onVisibilityChanged('contact', i.visibleFraction),
-                  child: const ContactSection(),
+                  child: ContactSection(scrollController: _scrollController),
                 ),
               ],
             ),
@@ -156,6 +156,7 @@ class _PortfolioPageState extends State<PortfolioPage> {
       ('Experience', 'experience'),
       ('Projects', 'projects'),
       ('Skills', 'skills'),
+      ('AI Tools', 'ai'),
       ('Contact', 'contact'),
     ];
 
@@ -167,26 +168,30 @@ class _PortfolioPageState extends State<PortfolioPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ShaderMask(
-                shaderCallback: (b) =>
-                    AppColors.primaryGradient.createShader(b),
-                child: const Text(
-                  'GH.',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
+              Row(
+                children: [
+                  ShaderMask(
+                    shaderCallback: (b) =>
+                        AppColors.primaryGradient.createShader(b),
+                    child: const Text(
+                      'GH.',
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Gaurav Hada',
+                    style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+                  ),
+                ],
               ),
-              const SizedBox(height: 8),
-              const Text(
-                'Gaurav Hada',
-                style: TextStyle(color: AppColors.textMuted, fontSize: 14),
-              ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
               Container(height: 1, color: AppColors.border),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
               ...navItems.map(
                 (item) => GestureDetector(
                   onTap: () {
@@ -196,20 +201,24 @@ class _PortfolioPageState extends State<PortfolioPage> {
                       () => _scrollTo(item.$2),
                     );
                   },
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    decoration: const BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(color: AppColors.border, width: 0.5),
+                  child: MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      decoration: const BoxDecoration(
+                        border: Border(
+                          bottom:
+                              BorderSide(color: AppColors.border, width: 0.5),
+                        ),
                       ),
-                    ),
-                    child: Text(
-                      item.$1,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
+                      child: Text(
+                        item.$1,
+                        style: const TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ),
@@ -226,18 +235,26 @@ class _PortfolioPageState extends State<PortfolioPage> {
                 },
                 child: Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 15),
                   decoration: BoxDecoration(
                     gradient: AppColors.primaryGradient,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.gold.withAlpha(60),
+                        blurRadius: 15,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
                   child: const Center(
                     child: Text(
                       'Hire Me',
                       style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
+                        color: Colors.black,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 15,
+                        letterSpacing: 0.3,
                       ),
                     ),
                   ),

@@ -1,103 +1,158 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/responsive.dart';
-import '../../data/portfolio_data.dart';
 import '../../widgets/section_header.dart';
-import 'package:visibility_detector/visibility_detector.dart';
+import '../../widgets/scroll_reveal.dart';
 
 class SkillsSection extends StatelessWidget {
   final ValueNotifier<String> activeSectionNotifier;
+  final ScrollController scrollController;
 
-  const SkillsSection({super.key, required this.activeSectionNotifier});
+  const SkillsSection({
+    super.key,
+    required this.activeSectionNotifier,
+    required this.scrollController,
+  });
+
+  // Each category uses asset images where available, falls back to emoji
+  static const _categories = [
+    {
+      'name': 'Flutter & Mobile',
+      'assetIcon': 'assets/images/icon_flutter.png',
+      'color': 0xFF54C5F8,
+      'skills': [
+        {'name': 'Flutter SDK', 'asset': 'assets/images/icon_flutter.png'},
+        {'name': 'Dart', 'asset': ''},
+        {'name': 'Android', 'asset': ''},
+        {'name': 'iOS / Swift', 'asset': 'assets/images/icon_ios.png'},
+        {'name': 'Material 3 UI', 'asset': ''},
+        {'name': 'Platform Channels', 'asset': ''},
+        {'name': 'Responsive Design', 'asset': ''},
+      ],
+    },
+    {
+      'name': 'Backend & Cloud',
+      'assetIcon': 'assets/images/icon_firebase.png',
+      'color': 0xFFFFCA28,
+      'skills': [
+        {'name': 'Firebase Auth', 'asset': 'assets/images/icon_firebase.png'},
+        {'name': 'Cloud Firestore', 'asset': 'assets/images/icon_firebase.png'},
+        {'name': 'FCM Push', 'asset': 'assets/images/icon_firebase.png'},
+        {'name': 'REST APIs', 'asset': ''},
+        {'name': 'Razorpay / Stripe', 'asset': ''},
+        {'name': 'Crashlytics', 'asset': ''},
+      ],
+    },
+    {
+      'name': 'Architecture & State',
+      'assetIcon': 'assets/images/icon_architecture.png',
+      'color': 0xFF6366F1,
+      'skills': [
+        {'name': 'GetX', 'asset': ''},
+        {'name': 'Riverpod', 'asset': ''},
+        {'name': 'BLoC Pattern', 'asset': ''},
+        {'name': 'Clean Architecture', 'asset': 'assets/images/icon_architecture.png'},
+        {'name': 'MVVM / MVC', 'asset': ''},
+        {'name': 'Dependency Injection', 'asset': ''},
+      ],
+    },
+    {
+      'name': 'DevOps & Tools',
+      'assetIcon': 'assets/images/icon_devops.png',
+      'color': 0xFF10B981,
+      'skills': [
+        {'name': 'Git & GitHub', 'asset': ''},
+        {'name': 'GitHub Actions CI/CD', 'asset': 'assets/images/icon_devops.png'},
+        {'name': 'Play Console', 'asset': 'assets/images/icon_play_store.png'},
+        {'name': 'App Store Connect', 'asset': 'assets/images/icon_app_store.png'},
+        {'name': 'Figma UI/UX', 'asset': 'assets/images/icon_figma.png'},
+        {'name': 'Jira & Agile', 'asset': ''},
+      ],
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
     final isMobile = Responsive.isMobile(context);
     final isTablet = Responsive.isTablet(context);
     final padding = Responsive.horizontalPadding(context);
-
-    int crossCount = isMobile ? 1 : (isTablet ? 2 : 3);
+    final cols = isMobile ? 1 : (isTablet ? 2 : 2);
 
     return Container(
       width: double.infinity,
-      color: AppColors.surfaceLight,
+      color: AppColors.background,
       padding: EdgeInsets.symmetric(
         horizontal: padding,
-        vertical: isMobile ? 80 : 0,
+        vertical: isMobile ? 70 : 100,
       ),
       child: Column(
         children: [
           const SectionHeader(
             tag: 'TECH STACK',
-            title: 'Technical Skills',
+            title: 'Skills & Technologies',
             subtitle:
-                'Core competencies across front-end, back-end, and design components',
+                'End-to-end Flutter development across mobile, backend, and DevOps',
           ),
-          const SizedBox(height: 60),
-          _buildGrid(crossCount, isMobile),
+          const SizedBox(height: 50),
+          _buildGrid(context, cols, isMobile),
         ],
       ),
     );
   }
 
-  Widget _buildGrid(int crossCount, bool isMobile) {
-    if (crossCount == 1) {
-      return Column(
-        children: PortfolioData.skills
-            .asMap()
-            .entries
-            .map(
-              (e) => Padding(
-                padding: const EdgeInsets.only(bottom: 20),
-                child: _SkillCard(
-                  category: e.value,
-                  index: e.key,
-                  activeSectionNotifier: activeSectionNotifier,
-                ),
-              ),
-            )
-            .toList(),
-      );
-    }
-
+  Widget _buildGrid(BuildContext context, int cols, bool isMobile) {
     final rows = <Widget>[];
-    for (int i = 0; i < PortfolioData.skills.length; i += crossCount) {
-      final rowItems = PortfolioData.skills.sublist(
+    for (int i = 0; i < _categories.length; i += cols) {
+      final rowItems = _categories.sublist(
         i,
-        (i + crossCount).clamp(0, PortfolioData.skills.length),
+        (i + cols).clamp(0, _categories.length),
       );
       rows.add(
         Padding(
           padding: const EdgeInsets.only(bottom: 20),
-          child: SizedBox(
-            height: isMobile ? 600 : 540,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                ...rowItems.asMap().entries.map((e) {
-                  final idx = i + e.key;
-                  return Expanded(
-                    child: Padding(
+          // Only use IntrinsicHeight on desktop (multi-column) to equalise heights.
+          // On mobile (single column) avoid it to prevent fixed-height overflow.
+          child: isMobile
+              ? Column(
+                  children: rowItems.asMap().entries.map((e) {
+                    return Padding(
                       padding: EdgeInsets.only(
-                        right: e.key < rowItems.length - 1 ? 20 : 0,
+                        bottom: e.key < rowItems.length - 1 ? 20 : 0,
                       ),
                       child: _SkillCard(
-                        category: e.value,
-                        index: idx,
+                        category: _categories[i + e.key],
+                        index: i + e.key,
                         activeSectionNotifier: activeSectionNotifier,
+                        scrollController: scrollController,
                       ),
-                    ),
-                  );
-                }),
-                if (rowItems.length < crossCount)
-                  ...List.generate(
-                    crossCount - rowItems.length,
-                    (_) => const Expanded(child: SizedBox()),
+                    );
+                  }).toList(),
+                )
+              : IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      ...rowItems.asMap().entries.map((e) => Expanded(
+                            child: Padding(
+                              padding: EdgeInsets.only(
+                                right: e.key < rowItems.length - 1 ? 20 : 0,
+                              ),
+                              child: _SkillCard(
+                                category: _categories[i + e.key],
+                                index: i + e.key,
+                                activeSectionNotifier: activeSectionNotifier,
+                                scrollController: scrollController,
+                              ),
+                            ),
+                          )),
+                      if (rowItems.length < cols)
+                        ...List.generate(
+                          cols - rowItems.length,
+                          (_) => const Expanded(child: SizedBox()),
+                        ),
+                    ],
                   ),
-              ],
-            ),
-          ),
+                ),
         ),
       );
     }
@@ -106,14 +161,16 @@ class SkillsSection extends StatelessWidget {
 }
 
 class _SkillCard extends StatefulWidget {
-  final dynamic category;
+  final Map<String, dynamic> category;
   final int index;
   final ValueNotifier<String> activeSectionNotifier;
+  final ScrollController scrollController;
 
   const _SkillCard({
     required this.category,
     required this.index,
     required this.activeSectionNotifier,
+    required this.scrollController,
   });
 
   @override
@@ -122,133 +179,124 @@ class _SkillCard extends StatefulWidget {
 
 class _SkillCardState extends State<_SkillCard> {
   bool _hovered = false;
-  bool _isVisible = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _checkVisibility();
-    widget.activeSectionNotifier.addListener(_checkVisibility);
-  }
-
-  @override
-  void dispose() {
-    widget.activeSectionNotifier.removeListener(_checkVisibility);
-    super.dispose();
-  }
-
-  void _checkVisibility() {
-    if ((widget.activeSectionNotifier.value == 'skills' ||
-            widget.activeSectionNotifier.value == 'contact') &&
-        !_isVisible) {
-      if (mounted) setState(() => _isVisible = true);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     final cat = widget.category;
+    final accent = Color(cat['color'] as int);
+    final skillsList = cat['skills'] as List<Map<String, String>>;
+    final categoryAsset = cat['assetIcon'] as String? ?? '';
 
-    return MouseRegion(
+    return ScrollReveal(
+      scrollController: widget.scrollController,
+      delay: (widget.index % 2) * 80,
+      child: MouseRegion(
           onEnter: (_) => setState(() => _hovered = true),
           onExit: (_) => setState(() => _hovered = false),
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 250),
-            transform: Matrix4.identity()
-              ..translate(0.0, _hovered ? -5.0 : 0.0),
-            padding: const EdgeInsets.all(28),
+            duration: const Duration(milliseconds: 280),
+            transform: Matrix4.translationValues(0, _hovered ? -6 : 0, 0),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: _hovered ? AppColors.cardHover : AppColors.surfaceLight,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: _hovered
-                    ? AppColors.gold.withAlpha(80)
-                    : AppColors.border,
-                width: 1,
+                color: _hovered ? accent.withAlpha(120) : AppColors.border,
               ),
               boxShadow: _hovered
                   ? [
                       BoxShadow(
-                        color: AppColors.gold.withAlpha(10),
+                        color: accent.withAlpha(25),
                         blurRadius: 30,
-                        offset: const Offset(0, 10),
-                      ),
+                        offset: const Offset(0, 12),
+                      )
                     ]
                   : [
                       BoxShadow(
-                        color: Colors.black.withAlpha(4),
-                        blurRadius: 15,
-                        offset: const Offset(0, 5),
-                      ),
+                        color: Colors.black.withAlpha(25),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      )
                     ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min, // KEY FIX: prevents overflow
               children: [
+                // Card header with real asset image
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: AppColors.surfaceLight,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: AppColors.borderLight),
+                        color: accent.withAlpha(20),
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Text(
-                        cat.emoji ?? '⭐',
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontFamilyFallback: [
-                            'Apple Color Emoji',
-                            'Segoe UI Emoji',
-                            'Noto Color Emoji',
-                          ],
-                        ),
-                      ),
+                      child: categoryAsset.isNotEmpty
+                          ? Image.asset(
+                              categoryAsset,
+                              width: 22,
+                              height: 22,
+                              fit: BoxFit.contain,
+                              errorBuilder: (_, __, ___) => Text(
+                                cat['emoji'] as String? ?? '🔧',
+                                style: const TextStyle(fontSize: 20),
+                              ),
+                            )
+                          : Text(
+                              cat['emoji'] as String? ?? '🔧',
+                              style: const TextStyle(fontSize: 20),
+                            ),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        cat.name,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 18,
+                        cat['name'] as String,
+                        style: TextStyle(
+                          color: _hovered
+                              ? const Color(0xFFF1F1F3)
+                              : const Color(0xFFE5E7EB),
+                          fontSize: 16,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
+                // Skill chips with asset image
                 Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: (cat.skills as List)
-                      .map<Widget>((skill) => _SkillChip(skill as String))
-                      .toList(),
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: skillsList.map((skill) {
+                    return _SkillChip(
+                      name: skill['name']!,
+                      assetPath: skill['asset']!,
+                      accent: accent,
+                      parentHovered: _hovered,
+                    );
+                  }).toList(),
                 ),
               ],
             ),
           ),
-        )
-        .animate(target: _isVisible ? 1 : 0)
-        .fadeIn(
-          duration: 600.ms,
-          delay: Duration(milliseconds: 100 * (widget.index % 3)),
-        )
-        .scale(
-          begin: const Offset(0.9, 0.9),
-          curve: Curves.easeOutBack,
-          duration: 600.ms,
-        )
-        .blurXY(begin: 10, end: 0, duration: 500.ms)
-        .slideY(begin: 0.1, curve: Curves.easeOutQuad);
+        ),
+      );
   }
 }
 
 class _SkillChip extends StatefulWidget {
-  final String label;
-  const _SkillChip(this.label);
+  final String name;
+  final String assetPath;
+  final Color accent;
+  final bool parentHovered;
+
+  const _SkillChip({
+    required this.name,
+    required this.assetPath,
+    required this.accent,
+    required this.parentHovered,
+  });
 
   @override
   State<_SkillChip> createState() => _SkillChipState();
@@ -263,22 +311,60 @@ class _SkillChipState extends State<_SkillChip> {
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: _hovered ? AppColors.darkAccent : AppColors.surfaceLight,
+          color: _hovered ? widget.accent.withAlpha(20) : AppColors.card,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: _hovered ? AppColors.darkAccent : AppColors.border,
+            color: _hovered ? widget.accent.withAlpha(80) : AppColors.border,
           ),
         ),
-        child: Text(
-          widget.label,
-          style: TextStyle(
-            color: _hovered ? Colors.white : AppColors.textSecondary,
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-          ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Use asset image if provided, else accent-colored dot
+            if (widget.assetPath.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(right: 6),
+                child: Image.asset(
+                  widget.assetPath,
+                  width: 13,
+                  height: 13,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: widget.accent.withAlpha(180),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+              )
+            else
+              Padding(
+                padding: const EdgeInsets.only(right: 6),
+                child: Container(
+                  width: 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: _hovered
+                        ? widget.accent.withAlpha(200)
+                        : const Color(0xFF4B5563),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+            Text(
+              widget.name,
+              style: TextStyle(
+                color: _hovered ? widget.accent : const Color(0xFF9CA3AF),
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
       ),
     );
